@@ -34,6 +34,7 @@ import Commands from '../lib/Commands';
 import { PageConfig } from '@jupyterlab/coreutils';
 
 const KALE_NOTEBOOK_METADATA_KEY = 'kubeflow_notebook';
+const DEFAULT_EXPERIMENT_NAME = 'Default';
 
 export interface IExperiment {
   id: string;
@@ -80,8 +81,8 @@ export interface IKaleNotebookMetadata {
 
 export const DefaultState: IState = {
   metadata: {
-    experiment: { id: '', name: '' },
-    experiment_name: '',
+    experiment: { id: '', name: DEFAULT_EXPERIMENT_NAME },
+    experiment_name: DEFAULT_EXPERIMENT_NAME,
     pipeline_name: '',
     pipeline_description: '',
     docker_image: '',
@@ -112,9 +113,9 @@ export class KubeflowKaleLeftPanel extends React.Component<IProps, IState> {
       this.getActiveNotebook() &&
       // absolute path to the notebook's root (--notebook-dir option, if set)
       PageConfig.getOption('serverRoot') +
-        '/' +
-        // relative path wrt to 'serverRoot'
-        this.getActiveNotebook()?.context.path
+      '/' +
+      // relative path wrt to 'serverRoot'
+      this.getActiveNotebook()?.context.path
     );
   };
 
@@ -179,7 +180,7 @@ export class KubeflowKaleLeftPanel extends React.Component<IProps, IState> {
     // warning: this method does not work if keys change order.
     if (
       JSON.stringify(prevState.metadata) !==
-        JSON.stringify(this.state.metadata) &&
+      JSON.stringify(this.state.metadata) &&
       this.getActiveNotebook()
     ) {
       const activeNotebook = this.getActiveNotebook();
@@ -265,7 +266,7 @@ export class KubeflowKaleLeftPanel extends React.Component<IProps, IState> {
 
       // if the key exists in the notebook's metadata
       if (notebookMetadata) {
-        let experiment: IExperiment = { id: '', name: '' };
+        let experiment: IExperiment = { id: '', name: DEFAULT_EXPERIMENT_NAME };
         let experiment_name: string = '';
         if (notebookMetadata['experiment']) {
           experiment = {
@@ -290,11 +291,19 @@ export class KubeflowKaleLeftPanel extends React.Component<IProps, IState> {
           this.resetState();
         }
 
+        if (experiment_name === '') {
+          experiment_name = DEFAULT_EXPERIMENT_NAME;
+        }
+
+        if (experiment.name === '') {
+          experiment.name = DEFAULT_EXPERIMENT_NAME;
+        }
+
         const metadata: IKaleNotebookMetadata = {
           ...notebookMetadata,
           experiment: experiment,
           experiment_name: experiment_name,
-          pipeline_name: notebookMetadata['pipeline_name'] || '',
+          pipeline_name: notebookMetadata['pipeline_name'] || notebook.title.label,
           pipeline_description: notebookMetadata['pipeline_description'] || '',
           docker_image:
             notebookMetadata['docker_image'] ||
@@ -307,7 +316,8 @@ export class KubeflowKaleLeftPanel extends React.Component<IProps, IState> {
       } else {
         this.setState((prevState, props) => ({
           metadata: {
-            ...DefaultState.metadata
+            ...DefaultState.metadata,
+            pipeline_name: notebook.title.label.split(".")[0].toLowerCase()
           }
         }));
       }
@@ -404,12 +414,12 @@ export class KubeflowKaleLeftPanel extends React.Component<IProps, IState> {
     // UPLOAD
     const uploadPipeline =
       this.state.deploymentType === 'upload' ||
-      this.state.deploymentType === 'run'
+        this.state.deploymentType === 'run'
         ? await commands.uploadPipeline(
-            compileNotebook.pipeline_package_path,
-            compileNotebook.pipeline_metadata,
-            _updateDeployProgress
-          )
+          compileNotebook.pipeline_package_path,
+          compileNotebook.pipeline_metadata,
+          _updateDeployProgress
+        )
         : null;
 
     if (!uploadPipeline) {

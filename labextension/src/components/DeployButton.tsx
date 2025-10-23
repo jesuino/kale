@@ -128,6 +128,7 @@ export const SplitDeployButton: React.FunctionComponent<
                 aria-controls={open ? 'menu-list-grow' : undefined}
                 aria-haspopup="true"
                 onClick={handleToggle}
+                style={{ width: '40px' }}
               >
                 <MoreVertIcon />
               </DropdownButton>
@@ -143,7 +144,7 @@ export const SplitDeployButton: React.FunctionComponent<
                   {...TransitionProps}
                   style={{
                     transformOrigin:
-                      placement === 'bottom' ? 'center top' : 'center bottom'
+                      placement === 'bottom' ? 'right top' : 'right bottom'
                   }}
                 >
                   <Paper id="menu-list-grow">

@@ -29,6 +29,9 @@ import TerminatedIcon from '../../icons/statusTerminated';
 import { DeployProgressState } from './DeploysProgress';
 import DeployUtils from './DeployUtils';
 
+// this should not be hardcoded
+const KFP_URL = 'http://localhost:8080';
+
 // From kubeflow/pipelines repo
 enum PipelineStatus {
   ERROR = 'Error',
@@ -53,9 +56,9 @@ export const DeployProgress: React.FunctionComponent<
     // link: /_/pipeline/#/pipelines/details/<id>
     // id = uploadPipeline.pipeline.id
     if (!pipeline.pipeline || !pipeline.pipeline.pipelineid) {
-      return '#';
+      return `${KFP_URL}/#/pipelines`;
     }
-    const link = `${window.location.origin}/_/pipeline/#/pipelines/details/${pipeline.pipeline.pipelineid}/version/${pipeline.pipeline.versionid}`;
+    const link = `${KFP_URL}/#/pipelines/details/${pipeline.pipeline.pipelineid}/version/${pipeline.pipeline.versionid}`;
     return props.namespace
       ? link.replace('#', `?ns=${props.namespace}#`)
       : link;
@@ -67,7 +70,7 @@ export const DeployProgress: React.FunctionComponent<
     if (!run.id) {
       return '#';
     }
-    const link = `${window.location.origin}/_/pipeline/#/runs/details/${run.id}`;
+    const link = `${KFP_URL}/#/runs/details/${run.id}`;
     return props.namespace
       ? link.replace('#', `?ns=${props.namespace}#`)
       : link;
